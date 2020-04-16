@@ -27,5 +27,7 @@ fun createNewCSV(rows: List<Map<String, String>>): List<List<String>> {
 }
 
 fun main() {
-    writeToCSV("data.csv", createNewCSV(readFromCSV("user-list-200412-142909-1.csv")))
+    print("Enter the filepath of the csv: ")
+    val fileName: String = readLine()!!
+    writeToCSV("data.csv", createNewCSV(readFromCSV(fileName)))
 }
