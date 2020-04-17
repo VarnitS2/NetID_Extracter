@@ -28,6 +28,6 @@ fun createNewCSV(rows: List<Map<String, String>>): List<List<String>> {
 
 fun main() {
     print("Enter the filepath of the csv: ")
-    val fileName: String = readLine()!!
-    writeToCSV("data.csv", createNewCSV(readFromCSV(fileName)))
+    val filePath: String = readLine()!!
+    writeToCSV("data/data.csv", createNewCSV(readFromCSV(filePath)))
 }
