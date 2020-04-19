@@ -1,6 +1,6 @@
 fun mainMenu(): String {
     println("1. Parse a CSV file for NetIDs.")
-    println("2. Find missing records from a CSV.")
+    println("2. Find missing records from a Google Form CSV.")
     println("3. Exit.")
     return readLine()!!
 }

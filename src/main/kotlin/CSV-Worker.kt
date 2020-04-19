@@ -22,6 +22,7 @@ fun writeToCSV(fileName: String, rows: List<List<String>>) {
     csvWriter().open(fileName) { writeAll(rows) }
 }
 
+// TODO: Account for CSVs with different header names.
 fun createNewCSV(rows: List<Map<String, String>>): List<List<String>> {
     val newRows = mutableListOf<List<String>>()
     newRows.add(listOf("name", "email", "netid"))
@@ -39,7 +40,7 @@ fun createNewCSV(rows: List<Map<String, String>>): List<List<String>> {
 }
 
 fun parseCSV() {
-    print("\nEnter the filepath of the csv: ")
+    print("\nEnter the filepath of the CSV: ")
     val filePath: String = readLine()!!
     val parsedFilePath = "data/Parsed-Data-${createDateTimeString()}.csv"
 
@@ -48,18 +49,45 @@ fun parseCSV() {
 }
 
 fun missingRecords() {
-    print("\nEnter the filepath of the csv with all student records: ")
+    print("\nEnter the filepath of the CSV with all student records: ")
     val masterFilePath: String = readLine()!!
-    print("Enter the filepath of the other csv: ")
+    print("Enter the filepath of the Google Form CSV: ")
     val filePath: String = readLine()!!
 
-    val masterList = readFromCSV(masterFilePath)
-    val otherList = readFromCSV(filePath)
+    val masterList = readFromCSVWithHeader(masterFilePath)
+    val otherList = readFromCSVWithHeader(filePath)
+
+    val masterEmailList = mutableListOf<String>()
+    val otherEmailList = mutableListOf<String>()
+
+    for (record in masterList) {
+        masterEmailList.add(record["email"].toString())
+    }
+    for (record in otherList) {
+        otherEmailList.add(record["Username"].toString())
+    }
+
+    val emailDifference = masterEmailList.toSet().minus(otherEmailList.toSet()).toList()
+    val nameDifference = mutableListOf<String>()
+    val netIDDifference = mutableListOf<String>()
+
+    for (email in emailDifference) {
+        for (record in masterList) {
+            if (email == record["email"]) {
+                nameDifference.add(record["name"].toString())
+                netIDDifference.add(record["netid"].toString())
+            }
+        }
+    }
+
+    val difference = mutableListOf<List<String>>()
+    difference.add(listOf("name", "email", "netid"))
+
+    for (i in emailDifference.indices) {
+        difference.add(listOf(nameDifference[i], emailDifference[i], netIDDifference[i]))
+    }
+
     val differenceFilePath = "data/Difference-Data-${createDateTimeString()}.csv"
-
-    val difference = masterList.toSet().minus(otherList.toSet()).toMutableList()
-    difference.add(0, listOf("name", "email", "netid"))
-
     writeToCSV(differenceFilePath, difference)
     println("The parsed file is saved at $differenceFilePath\n")
 }
