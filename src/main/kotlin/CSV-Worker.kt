@@ -3,8 +3,19 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
 import java.time.LocalDateTime
 
-fun readFromCSV(fileName: String): List<Map<String, String>> {
+fun createDateTimeString(): String {
+    val today = LocalDateTime.now().toString().split("T")[0]
+    val hour = LocalDateTime.now().hour
+    val minute = LocalDateTime.now().minute
+    return "$today-$hour-$minute"
+}
+
+fun readFromCSVWithHeader(fileName: String): List<Map<String, String>> {
     return csvReader().readAllWithHeader(File(fileName))
+}
+
+fun readFromCSV(fileName: String): List<List<String>> {
+    return csvReader().readAll(File(fileName))
 }
 
 fun writeToCSV(fileName: String, rows: List<List<String>>) {
@@ -28,14 +39,27 @@ fun createNewCSV(rows: List<Map<String, String>>): List<List<String>> {
 }
 
 fun parseCSV() {
-    val today = LocalDateTime.now().toString().split("T")[0]
-    val hour = LocalDateTime.now().hour
-    val minute = LocalDateTime.now().minute
-
     print("\nEnter the filepath of the csv: ")
     val filePath: String = readLine()!!
-    val parsedFilePath = "data/Parsed-Data-$today-$hour-$minute.csv"
+    val parsedFilePath = "data/Parsed-Data-${createDateTimeString()}.csv"
 
-    writeToCSV(parsedFilePath, createNewCSV(readFromCSV(filePath)))
+    writeToCSV(parsedFilePath, createNewCSV(readFromCSVWithHeader(filePath)))
     println("The parsed file is saved at $parsedFilePath\n")
+}
+
+fun missingRecords() {
+    print("\nEnter the filepath of the csv with all student records: ")
+    val masterFilePath: String = readLine()!!
+    print("Enter the filepath of the other csv: ")
+    val filePath: String = readLine()!!
+
+    val masterList = readFromCSV(masterFilePath)
+    val otherList = readFromCSV(filePath)
+    val differenceFilePath = "data/Difference-Data-${createDateTimeString()}.csv"
+
+    val difference = masterList.toSet().minus(otherList.toSet()).toMutableList()
+    difference.add(0, listOf("name", "email", "netid"))
+
+    writeToCSV(differenceFilePath, difference)
+    println("The parsed file is saved at $differenceFilePath\n")
 }
