@@ -42,26 +42,50 @@ fun createNewCSV(rows: List<Map<String, String>>): List<List<String>> {
 fun parseCSV() {
     print("\nEnter the filepath of the CSV: ")
     val filePath: String = readLine()!!
-    val parsedFilePath = "data/Parsed-Data-${createDateTimeString()}.csv"
+    val parsedFilePath = "data/discourse_csv/Parsed-Data-${createDateTimeString()}.csv"
 
     writeToCSV(parsedFilePath, createNewCSV(readFromCSVWithHeader(filePath)))
     println("The parsed file is saved at $parsedFilePath\n")
 }
 
-fun missingRecords() {
-    print("\nEnter the filepath of the CSV with all student records: ")
+fun getFilePath(fileType: String): String {
+    if (fileType == "masterCSV") {
+        File("data/discourse_csv/").walk().forEach {
+            if (it.toString().startsWith("data\\discourse_csv\\Parsed-Data-")) {
+                return it.toString()
+            }
+        }
+    }
+
+    return ""
+}
+
+fun missingRecords(googleForm: Boolean = false) {
+    if (googleForm) {
+        print("\nEnter the filepath of the first Google Form CSV: ")
+    } else {
+        print("\nEnter the filepath of the CSV with all student records: ")
+    }
     val masterFilePath: String = readLine()!!
+
     print("Enter the filepath of the Google Form CSV: ")
     val filePath: String = readLine()!!
 
+    val parsedFilePath = getFilePath("masterCSV")
+
     val masterList = readFromCSVWithHeader(masterFilePath)
     val otherList = readFromCSVWithHeader(filePath)
+    val parsedList = readFromCSVWithHeader(parsedFilePath)
 
     val masterEmailList = mutableListOf<String>()
     val otherEmailList = mutableListOf<String>()
 
     for (record in masterList) {
-        masterEmailList.add(record["email"].toString())
+        if (googleForm) {
+            masterEmailList.add(record["Username"].toString())
+        } else {
+            masterEmailList.add(record["email"].toString())
+        }
     }
     for (record in otherList) {
         otherEmailList.add(record["Username"].toString())
@@ -72,10 +96,19 @@ fun missingRecords() {
     val netIDDifference = mutableListOf<String>()
 
     for (email in emailDifference) {
-        for (record in masterList) {
-            if (email == record["email"]) {
-                nameDifference.add(record["name"].toString())
-                netIDDifference.add(record["netid"].toString())
+        if (googleForm) {
+            for (record in parsedList) {
+                if (email == record["email"]) {
+                    nameDifference.add(record["name"].toString())
+                    netIDDifference.add(record["netid"].toString())
+                }
+            }
+        } else {
+            for (record in masterList) {
+                if (email == record["email"]) {
+                    nameDifference.add(record["name"].toString())
+                    netIDDifference.add(record["netid"].toString())
+                }
             }
         }
     }
@@ -87,7 +120,7 @@ fun missingRecords() {
         difference.add(listOf(nameDifference[i], emailDifference[i], netIDDifference[i]))
     }
 
-    val differenceFilePath = "data/Difference-Data-${createDateTimeString()}.csv"
+    val differenceFilePath = "data/google_form_csv/Difference-Data-${createDateTimeString()}.csv"
     writeToCSV(differenceFilePath, difference)
     println("The parsed file is saved at $differenceFilePath\n")
 }
